@@ -72,7 +72,7 @@ git clone https://github.com/JohnNtirintis/Recipe-Management-System
 
 2. Navigate to the project directory:
 ```sh
-cd RecipeManagementSystem
+cd Recipe-Management-System
 ```
 
 3. Compile and run the Main.java to start the application.
