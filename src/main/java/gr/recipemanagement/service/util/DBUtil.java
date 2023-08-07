@@ -18,7 +18,7 @@ public class DBUtil {
     static {
         ds.setUrl("jdbc:mysql://localhost:3306/recipe?serverTimezone=UTC");
         ds.setUsername("recipeuser");
-        ds.setPassword(System.getenv("recipeuser"));
+        ds.setPassword("123456");
         ds.setInitialSize(8);
         ds.setMaxTotal(32);
         ds.setMinIdle(8);
