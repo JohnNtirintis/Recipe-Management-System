@@ -7,6 +7,10 @@ import java.awt.*;
 /**
  * @author Ntirintis John
  */
+
+// TODO: Add ingredients input filed in "add recipe
+// TODO:  Complete View Recipes
+
 public class Main {
 
     private static Menu menu;

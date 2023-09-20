@@ -1,6 +1,7 @@
 package gr.recipemanagement.dto.recipedto;
 
 import gr.recipemanagement.dto.BaseDTO;
+import gr.recipemanagement.model.Ingredient;
 
 /**
  * @author Ntirintis John
@@ -9,6 +10,7 @@ public class RecipeUpdateDTO extends BaseDTO {
 
     private Integer id;
     private String recipeName;
+    private Ingredient ingredients;
     private String instructions;
     private double cookingTime;
 
@@ -19,6 +21,14 @@ public class RecipeUpdateDTO extends BaseDTO {
         this.recipeName = recipeName;
         this.instructions = instructions;
         this.cookingTime = cookingTime;
+    }
+
+    public Ingredient getIngredients(){
+        return ingredients;
+    }
+
+    public void setIngredients(Ingredient ingredients){
+       this.ingredients = ingredients;
     }
 
     public String getRecipeName() {

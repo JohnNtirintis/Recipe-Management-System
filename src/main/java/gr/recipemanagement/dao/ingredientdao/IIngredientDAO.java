@@ -12,4 +12,5 @@ public interface IIngredientDAO {
     Ingredient update(Ingredient ingredient) throws IngredientNotFoundDAOException;
     void delete(int id) throws  IngredientNotFoundDAOException;
     Ingredient getById(int id) throws IngredientNotFoundDAOException;
+    Ingredient getByName(String ingredientName) throws IngredientNotFoundDAOException;
 }

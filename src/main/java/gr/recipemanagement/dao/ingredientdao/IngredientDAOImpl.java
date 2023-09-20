@@ -134,4 +134,37 @@ public class IngredientDAOImpl implements IIngredientDAO {
         }
         return ingredient;
     }
+
+    @Override
+    public Ingredient getByName(String ingredientName) throws IngredientNotFoundDAOException {
+        String sql = "SELECT * FROM ingredients WHERE ingredientname = ?";
+
+        Ingredient ingredient = null;
+        ResultSet rs = null;
+
+        try(Connection connection = DBUtil.getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)){
+
+            ps.setString(1, ingredientName);
+            rs = ps.executeQuery();
+
+            if(rs.next()){
+                ingredient = new Ingredient(rs.getInt("INGREDIENTID"), rs.getString("INGREDIENTNAME"), rs.getDouble("QUANTITY"), rs.getString("QUANTITYTYPE"));
+            }
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new IngredientNotFoundDAOException("Error! Ingredient with name " + ingredientName + " wasn't found!");
+        } finally {
+            try {
+                if(rs != null){
+                    rs.close();
+                }
+            } catch (SQLException e1){
+                e1.printStackTrace();
+            }
+        }
+
+        return ingredient;
+    }
 }

@@ -41,7 +41,7 @@ public class Ingredient {
         this.ingredientName = ingredientName;
     }
 
-    public double getQuantity() {
+    public Double getQuantity() {
         return quantity;
     }
 

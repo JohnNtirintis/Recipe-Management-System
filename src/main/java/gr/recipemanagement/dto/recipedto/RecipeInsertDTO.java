@@ -1,6 +1,8 @@
 package gr.recipemanagement.dto.recipedto;
 
 import gr.recipemanagement.dto.BaseDTO;
+import gr.recipemanagement.model.Ingredient;
+import gr.recipemanagement.service.exceptions.IngredientNotFoundDAOException;
 
 /**
  * @author Ntirintis John
@@ -10,6 +12,7 @@ public class RecipeInsertDTO extends BaseDTO {
 
     private String recipeName;
     private String instructions;
+    private Ingredient ingredients;
     private double cookingTime;
 
     public RecipeInsertDTO() {}
@@ -18,6 +21,14 @@ public class RecipeInsertDTO extends BaseDTO {
         setRecipeName(recipeName);
         this.instructions = instructions.trim();
         this.cookingTime = cookingTime;
+    }
+
+    public Ingredient getIngredients(){
+        return ingredients;
+    }
+
+    public void setIngredients(Ingredient ingredients){
+        this.ingredients = ingredients;
     }
 
     public String getRecipeName() {
