@@ -67,12 +67,12 @@ Note 3: Ensure you have the necessary privileges to create and modify databases 
 
 1. Clone the repository:
 ```sh
-git clone [https://github.com/YOUR_USERNAME/RecipeManagementSystem.git](https://github.com/JohnNtirintis/Recipe-Management-System)
+git clone https://github.com/JohnNtirintis/Recipe-Management-System
 ```
 
 2. Navigate to the project directory:
 ```sh
-cd RecipeManagementSystem
+cd Recipe-Management-System
 ```
 
 3. Compile and run the Main.java to start the application.
