@@ -1,19 +1,16 @@
 package gr.recipemanagement.dao.recipedao;
 
+import gr.recipemanagement.dto.recipedto.RecipeInsertDTO;
 import gr.recipemanagement.model.Ingredient;
 import gr.recipemanagement.model.Recipe;
+import gr.recipemanagement.service.exceptions.RecipeInsertException;
 import gr.recipemanagement.service.exceptions.RecipeNotFoundDAOException;
 import gr.recipemanagement.service.util.DBUtil;
 
 import javax.swing.*;
-import javax.xml.transform.Result;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Ntirintis John
@@ -25,7 +22,7 @@ public class RecipeDAOImpl implements IRecipeDAO {
         String sql = "INSERT INTO RECIPES (RECIPENAME, INSTRUCTIONS, COOKINGTIME) VALUES (?,?,?)";
 
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)){
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
             String recipeName = recipe.getRecipeName();
             String instructions = recipe.getInstructions();
@@ -35,13 +32,66 @@ public class RecipeDAOImpl implements IRecipeDAO {
             ps.setString(2, instructions);
             ps.setDouble(3, cookingTime);
 
-            ps.executeUpdate();
+            int affectedRows =  ps.executeUpdate();
+
+
+            if (affectedRows == 0) {
+                throw new SQLException("Inserting recipe failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int id = generatedKeys.getInt(1);
+                    recipe.setId(id);  // You'll need to add this setId method in your Recipe class
+                } else {
+                    throw new SQLException("Inserting recipe failed, no ID obtained.");
+                }
+            }
 
             return recipe;
         } catch (SQLException e){
             e.printStackTrace();
             throw new RecipeNotFoundDAOException("SQL Error in Recipe Insertion " + recipe);
         }
+    }
+
+    @Override
+    public Recipe insert(RecipeInsertDTO dto) throws RecipeInsertException {
+        System.out.println("Entered overloaded RecipeDAOImpl insert");
+        String sql = "INSERT INTO RECIPES (RECIPENAME, INSTRUCTIONS, COOKINGTIME) VALUES (?,?,?)";
+        Recipe newRecipe = null;
+        System.out.println("RecipeDAOImpl: Ran query");
+
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+            System.out.println("RecipeDAOImpl: Entered 1st try ");
+            ps.setString(1, dto.getRecipeName());
+            ps.setString(2, dto.getInstructions());
+            ps.setDouble(3, dto.getCookingTime());
+
+            System.out.println("RecipeDAOImpl: Attempting to execute Update");
+            int affectedRows = ps.executeUpdate();
+            System.out.println("RecipeDAOImpl: Executed Update");
+
+            if(affectedRows > 0){
+                System.out.println("RecipeDAOImpl: Entered if");
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()){
+                    System.out.println("RecipeDAOImpl: In 2nd try in if");
+                    if(generatedKeys.next()){
+                        int id = generatedKeys.getInt(1);
+                        newRecipe = new Recipe(id, dto.getRecipeName(), dto.getInstructions(), dto.getCookingTime());
+                        System.out.println("RecipeDAOImpl: New recipe created, id has generated keys and got the int id");
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new RecipeInsertException("SQL Error in Recipe Insertion " + dto.getRecipeName());
+        }
+        System.out.println("RecipeDAOImpl: RETURNING NEW RECIPE - END OF OVERLOADED INSERT");
+        return newRecipe;
     }
 
     @Override

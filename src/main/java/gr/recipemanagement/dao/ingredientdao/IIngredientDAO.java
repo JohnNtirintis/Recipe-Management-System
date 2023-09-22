@@ -9,6 +9,7 @@ import gr.recipemanagement.service.exceptions.IngredientNotFoundDAOException;
 public interface IIngredientDAO {
 
     Ingredient insert(Ingredient ingredient) throws IngredientNotFoundDAOException;
+    int insert(String ingredientName) throws IngredientNotFoundDAOException;
     Ingredient update(Ingredient ingredient) throws IngredientNotFoundDAOException;
     void delete(int id) throws  IngredientNotFoundDAOException;
     Ingredient getById(int id) throws IngredientNotFoundDAOException;

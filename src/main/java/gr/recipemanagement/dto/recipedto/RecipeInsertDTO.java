@@ -10,6 +10,7 @@ import gr.recipemanagement.service.exceptions.IngredientNotFoundDAOException;
 public class RecipeInsertDTO extends BaseDTO {
     // We take the id from the base DTO class
 
+    private String ingredientName;
     private String recipeName;
     private String instructions;
     private Ingredient ingredients;
@@ -30,6 +31,10 @@ public class RecipeInsertDTO extends BaseDTO {
     public void setIngredients(Ingredient ingredients){
         this.ingredients = ingredients;
     }
+
+//    public void setIngredientByName(String ingredientName){
+//
+//    }
 
     public String getRecipeName() {
         return recipeName;
@@ -53,5 +58,13 @@ public class RecipeInsertDTO extends BaseDTO {
 
     public void setCookingTime(double cookingTime) {
         this.cookingTime = cookingTime;
+    }
+
+    public String getIngredientName() {
+        return ingredientName;
+    }
+
+    public void setIngredientName(String ingredientName) {
+        this.ingredientName = ingredientName;
     }
 }

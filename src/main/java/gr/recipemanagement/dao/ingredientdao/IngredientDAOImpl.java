@@ -5,10 +5,7 @@ import gr.recipemanagement.service.exceptions.IngredientNotFoundDAOException;
 import gr.recipemanagement.service.util.DBUtil;
 
 import javax.swing.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * @author Ntirintis John
@@ -16,11 +13,13 @@ import java.sql.SQLException;
 public class IngredientDAOImpl implements IIngredientDAO {
     @Override
     public Ingredient insert(Ingredient ingredient) throws IngredientNotFoundDAOException {
+        System.out.println("Entered normal IngredientDAOImpl insert");
         String sql = "INSERT INTO INGREDIENTS (INGREDIENTNAME, QUANTITY, QUANTITYTYPE) VALUES (?,?,?)";
+        System.out.println("IngredientDAOImpl: ran query, entering try");
 
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)){
-
+            System.out.println("IngredientDAOImpl in 1st try");
             String ingredientName = ingredient.getIngredientName();
             String quantityType = ingredient.getQuantityType();
             Double quantity = ingredient.getQuantity();
@@ -29,7 +28,9 @@ public class IngredientDAOImpl implements IIngredientDAO {
             ps.setDouble(2, quantity);
             ps.setString(3, quantityType);
 
+            System.out.println("IngredientDAOImpl attempting to execute update");
             int n = ps.executeUpdate();
+            System.out.println("IngredientDAOImpl: update executed successfully");
 
             if(n > 1){
                 JOptionPane.showMessageDialog(null, n + "rows affected.", "Success!", JOptionPane.PLAIN_MESSAGE);
@@ -45,6 +46,42 @@ public class IngredientDAOImpl implements IIngredientDAO {
             e.printStackTrace();
             throw new IngredientNotFoundDAOException("Error in inserting ingredient: " + ingredient);
         }
+    }
+
+    @Override
+    public int insert(String ingredientName) throws IngredientNotFoundDAOException {
+        System.out.println("Entered overloaded IngredientDAOImpl insert");
+        String sql = "INSERT INTO INGREDIENTS (INGREDIENTNAME) VALUES (?)";
+        int generatedId = -1;
+
+        System.out.println("IngredientDAOImpl entering 1st try");
+
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+
+            ps.setString(1, ingredientName);
+            System.out.println("IngredientDAOImpl overloaded, attempting to execute update");
+            int n = ps.executeUpdate();
+            System.out.println("IngredientDAOImpl overloaded, update executed");
+
+            if(n > 0){
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()){
+                    if(generatedKeys.next()){
+                        System.out.println("IngredientDAOImpl overloaded generating keys and assigning them to generatedId");
+                        generatedId = generatedKeys.getInt(1);
+                        System.out.println("Finished generating keys and assigning them");
+                    }
+                }
+            } else {
+                throw new IngredientNotFoundDAOException("Failed to insert ingredient" + ingredientName);
+            }
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            throw new IngredientNotFoundDAOException("Error in inserting ingredient: " + ingredientName);
+        }
+        System.out.println("IngredientDAOImpl overloaded - RETURNING GENERATEDID");
+        return generatedId;
     }
 
     @Override

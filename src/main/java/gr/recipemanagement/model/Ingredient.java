@@ -25,6 +25,10 @@ public class Ingredient {
         this.quantityType = quantityType;
     }
 
+    public Ingredient(String ingredientName){
+        this.ingredientName = ingredientName;
+    }
+
     public Integer getId() {
         return id;
     }

@@ -1,11 +1,14 @@
 package gr.recipemanagement.viewcontroller;
 
 import gr.recipemanagement.dao.ingredientdao.IngredientDAOImpl;
+import gr.recipemanagement.dao.recipedao.RecipeDAOImpl;
+import gr.recipemanagement.dao.recipeingredientdao.RecipeIngredientDAOImpl;
 import gr.recipemanagement.dto.recipedto.RecipeInsertDTO;
 import gr.recipemanagement.factory.SQLStorageFactory;
 import gr.recipemanagement.model.Ingredient;
 import gr.recipemanagement.model.Recipe;
 import gr.recipemanagement.service.exceptions.IngredientNotFoundDAOException;
+import gr.recipemanagement.service.exceptions.RecipeInsertException;
 import gr.recipemanagement.service.exceptions.RecipeNotFoundDAOException;
 import gr.recipemanagement.service.recipeservice.IRecipeService;
 import gr.recipemanagement.service.recipeservice.RecipeServiceImpl;
@@ -32,6 +35,8 @@ public class AddRecipe extends JFrame {
     private JButton saveButton;
     private JButton cancelButton;
     private IngredientDAOImpl ingredientDAO;
+    private RecipeDAOImpl recipeDAO;
+    private RecipeIngredientDAOImpl recipeIngredientDAO;
 
     SQLStorageFactory factory = new SQLStorageFactory();
     IRecipeService recipeService = new RecipeServiceImpl(factory);
@@ -40,23 +45,34 @@ public class AddRecipe extends JFrame {
         setTitle("Add Recipe");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+        this.recipeDAO = new RecipeDAOImpl();
+        this.ingredientDAO = new IngredientDAOImpl();
+        this.recipeIngredientDAO = new RecipeIngredientDAOImpl();
+
         setupUI();
     }
 
     private void setupUI() {
-        // Styling as per your code
         Color backgroundColor = Menu.backgroundColor;
         Color buttonColor = Menu.buttonColor;
         Font font = Menu.buttonFont;
 
-        setSize(400, 300);
+        setSize(500, 400);
         setLocationRelativeTo(null);
-
 
         contentPane = new JPanel();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         contentPane.setBackground(backgroundColor);
-        contentPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        contentPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        saveButton = createStyledButton("Save", buttonColor, font);
+        cancelButton = createStyledButton("Cancel", buttonColor, font);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // aligns buttons to the right
+        buttonPanel.setBackground(backgroundColor);  // set the background color to match the contentPane
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
 
         recipeNameField = new JTextField(15);
         ingredientsField = new JTextField(15);
@@ -66,18 +82,17 @@ public class AddRecipe extends JFrame {
         saveButton = createStyledButton("Save", buttonColor, font);
         cancelButton = createStyledButton("Cancel", buttonColor, font);
 
-        // Set X alignment to center for each button
-        saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        saveButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+//        cancelButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
 
         // Add some rigid areas to create spacing between components
         contentPane.add(new JLabel("Recipe Name:"));
         contentPane.add(recipeNameField);
         contentPane.add(Box.createRigidArea(new Dimension(0, 10)));
-        contentPane.add(new JLabel("Ingredients:"));
+        contentPane.add(new JLabel("Ingredients (Separate with ,): "));
         contentPane.add(ingredientsField);
         contentPane.add(Box.createRigidArea(new Dimension(0, 10)));
-        contentPane.add(new JLabel("Instructions: (Separate with ,)"));
+        contentPane.add(new JLabel("Instructions: "));
         contentPane.add(instructionsField);
         contentPane.add(Box.createRigidArea(new Dimension(0, 10)));
         contentPane.add(new JLabel("Cooking Time in Minutes:"));
@@ -86,6 +101,14 @@ public class AddRecipe extends JFrame {
         contentPane.add(saveButton);
         contentPane.add(Box.createRigidArea(new Dimension(0, 5)));
         contentPane.add(cancelButton);
+
+        // Remove the buttons from the contentPane
+        contentPane.remove(saveButton);
+        contentPane.remove(cancelButton);
+
+        // Add buttonPanel to the contentPane
+        contentPane.add(Box.createRigidArea(new Dimension(0, 20)));  // add some space before the buttons
+        contentPane.add(buttonPanel);
 
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -113,12 +136,7 @@ public class AddRecipe extends JFrame {
                     dto.setInstructions(instructions);
                     dto.setCookingTime(cookingTime);
 
-                    // Set ingredients
-                    String[] allIngredients = ingredients.replaceAll("\\s", "").split(",");
-
-                    for(int i = 0; i < allIngredients.length; i++){
-                        dto.setIngredients(ingredientDAO.getByName(allIngredients[i]));
-                    }
+                    int recipeId = -1;
 
                     // Validate Date
                     recipeErrors = RecipeValidator.validate(dto);
@@ -132,20 +150,46 @@ public class AddRecipe extends JFrame {
                         return;
                     }
 
-                    Recipe recipe = recipeService.insertRecipe(dto);
+                    // Attempt to insert the recipe
+                    Recipe newRecipe = recipeService.insertRecipe(dto);
 
-                    JOptionPane.showMessageDialog(null, "Recipe" + recipe.getRecipeName()
+                    if(newRecipe != null){
+                        recipeId = newRecipe.getId();
+                    }
+
+                    // Set ingredients
+                    String[] allIngredients = ingredients.replaceAll("\\s", "").split(",");
+
+                    for(String ingredientName : allIngredients){
+                        int ingredientId;
+
+                        // Check if ingredient exists
+                        Ingredient existingIngredient = ingredientDAO.getByName(ingredientName);
+
+                        if(existingIngredient != null){
+                            // In case it exists, get its ID
+                            ingredientId = existingIngredient.getId();
+                        } else {
+                            // If it doesn't exist, insert it and get the new ID
+                            ingredientId = ingredientDAO.insert(ingredientName);
+                        }
+
+                        recipeIngredientDAO.linkRecipeAndIngredient(recipeId, ingredientId);
+                    }
+
+                    JOptionPane.showMessageDialog(null, "Recipe" + newRecipe.getRecipeName()
                             + " was inserted", "Successful Insertion!", JOptionPane.PLAIN_MESSAGE);
                 } catch (RecipeNotFoundDAOException e1){
                     JOptionPane.showMessageDialog(null, e1.getMessage(), "Error! Recipe not Found.", JOptionPane.ERROR_MESSAGE);
                     e1.printStackTrace();
                 } catch (IngredientNotFoundDAOException ex) {
-                    JOptionPane.showMessageDialog(null, ex.getMessage(), "Error! Ingredient not Found.", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, ex.getMessage(), "Error! Ingredient already exists.", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
                 }
             }
         });
 
         add(contentPane);
-//        pack();
     }
 }
+
