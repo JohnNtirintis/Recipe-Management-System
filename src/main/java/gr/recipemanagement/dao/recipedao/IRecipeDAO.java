@@ -25,4 +25,6 @@ public interface IRecipeDAO {
     Recipe getById(int id) throws RecipeNotFoundDAOException;
     List<Ingredient> getRecipeIngredients(int recipeId) throws RecipeNotFoundDAOException;
     Recipe getRecipeByName(String recipeName) throws RecipeNotFoundDAOException;
+    List<String> getRecipeNames() throws RecipeNotFoundDAOException;
+    String getRecipeDetails(String recipeName) throws RecipeNotFoundDAOException;
 }

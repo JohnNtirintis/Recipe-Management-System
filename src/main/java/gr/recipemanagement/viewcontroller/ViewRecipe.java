@@ -1,9 +1,14 @@
 package gr.recipemanagement.viewcontroller;
 
+import gr.recipemanagement.dao.recipedao.IRecipeDAO;
+import gr.recipemanagement.dao.recipedao.RecipeDAOImpl;
+import gr.recipemanagement.service.exceptions.RecipeNotFoundDAOException;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import static gr.recipemanagement.viewcontroller.Menu.createStyledButton;
 
@@ -16,11 +21,12 @@ public class ViewRecipe extends JFrame {
     private JComboBox<String> recipeDropdown;
     private JTextArea recipeDetailArea;
     private JButton closeButton;
+    private IRecipeDAO recipeDAO;
 
-    public ViewRecipe() {
+    public ViewRecipe(IRecipeDAO recipeDAO) {
+        this.recipeDAO = recipeDAO;
         setTitle("View Recipe");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
         setupUI();
     }
 
@@ -39,8 +45,6 @@ public class ViewRecipe extends JFrame {
         contentPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         recipeDropdown = new JComboBox<String>();
-        recipeDropdown.addItem("Sample Recipe 1");
-        recipeDropdown.addItem("Sample Recipe 2");
 
         recipeDetailArea = new JTextArea(10, 20);
         recipeDetailArea.setEditable(false);
@@ -51,6 +55,14 @@ public class ViewRecipe extends JFrame {
         contentPane.add(new JScrollPane(recipeDetailArea));
         contentPane.add(closeButton);
 
+        populateRecipeDropdown();
+
+        recipeDropdown.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateRecipeDetails();
+            }
+        });
+
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dispose();
@@ -60,4 +72,27 @@ public class ViewRecipe extends JFrame {
         add(contentPane);
 //        pack();
     }
+
+    private void populateRecipeDropdown(){
+        try {
+            List<String> recipeNames = recipeDAO.getRecipeNames();
+            for(String name : recipeNames){
+                recipeDropdown.addItem(name);
+            }
+        } catch (RecipeNotFoundDAOException e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error! Recipe not found.", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    private void updateRecipeDetails(){
+        try {
+            String selectedRecipeName = (String) recipeDropdown.getSelectedItem();
+            String recipeDetails = recipeDAO.getRecipeDetails(selectedRecipeName);
+            recipeDetailArea.setText(recipeDetails);
+        } catch (RecipeNotFoundDAOException e) {
+            // Handle the exception
+        }
+    }
+
 }

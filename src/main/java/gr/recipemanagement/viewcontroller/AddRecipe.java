@@ -32,6 +32,7 @@ public class AddRecipe extends JFrame {
     private JTextField ingredientsField;
     private JTextField instructionsField;
     private JTextField cookingTimeField;
+
     private JButton saveButton;
     private JButton cancelButton;
     private IngredientDAOImpl ingredientDAO;

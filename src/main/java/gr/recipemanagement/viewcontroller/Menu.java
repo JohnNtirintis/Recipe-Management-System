@@ -1,5 +1,7 @@
 package gr.recipemanagement.viewcontroller;
 
+import gr.recipemanagement.dao.recipedao.IRecipeDAO;
+import gr.recipemanagement.dao.recipedao.RecipeDAOImpl;
 import gr.recipemanagement.factory.SQLStorageFactory;
 import gr.recipemanagement.factory.StorageFactory;
 
@@ -22,6 +24,8 @@ public class Menu extends JFrame {
     private JButton editIngredientButton;
     private JButton viewIngredientButton;
     private JButton exitButton;
+    IRecipeDAO iRecipeDAO = new RecipeDAOImpl();
+
 
     // Styling
     public static final Color backgroundColor = new Color(245, 245, 245);
@@ -30,6 +34,7 @@ public class Menu extends JFrame {
 
     public Menu() {
         // Frame configuration
+
         setTitle("Cooking Recipes App");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -79,7 +84,7 @@ public class Menu extends JFrame {
 
         viewIngredientButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new ViewRecipe().setVisible(true);
+                new ViewRecipe(iRecipeDAO).setVisible(true);
             }
         });
 

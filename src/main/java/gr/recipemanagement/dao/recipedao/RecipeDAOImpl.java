@@ -22,7 +22,7 @@ public class RecipeDAOImpl implements IRecipeDAO {
         String sql = "INSERT INTO RECIPES (RECIPENAME, INSTRUCTIONS, COOKINGTIME) VALUES (?,?,?)";
 
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             String recipeName = recipe.getRecipeName();
             String instructions = recipe.getInstructions();
@@ -32,7 +32,7 @@ public class RecipeDAOImpl implements IRecipeDAO {
             ps.setString(2, instructions);
             ps.setDouble(3, cookingTime);
 
-            int affectedRows =  ps.executeUpdate();
+            int affectedRows = ps.executeUpdate();
 
 
             if (affectedRows == 0) {
@@ -49,7 +49,7 @@ public class RecipeDAOImpl implements IRecipeDAO {
             }
 
             return recipe;
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RecipeNotFoundDAOException("SQL Error in Recipe Insertion " + recipe);
         }
@@ -63,7 +63,7 @@ public class RecipeDAOImpl implements IRecipeDAO {
         System.out.println("RecipeDAOImpl: Ran query");
 
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             System.out.println("RecipeDAOImpl: Entered 1st try ");
             ps.setString(1, dto.getRecipeName());
             ps.setString(2, dto.getInstructions());
@@ -73,11 +73,11 @@ public class RecipeDAOImpl implements IRecipeDAO {
             int affectedRows = ps.executeUpdate();
             System.out.println("RecipeDAOImpl: Executed Update");
 
-            if(affectedRows > 0){
+            if (affectedRows > 0) {
                 System.out.println("RecipeDAOImpl: Entered if");
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()){
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                     System.out.println("RecipeDAOImpl: In 2nd try in if");
-                    if(generatedKeys.next()){
+                    if (generatedKeys.next()) {
                         int id = generatedKeys.getInt(1);
                         newRecipe = new Recipe(id, dto.getRecipeName(), dto.getInstructions(), dto.getCookingTime());
                         System.out.println("RecipeDAOImpl: New recipe created, id has generated keys and got the int id");
@@ -86,7 +86,7 @@ public class RecipeDAOImpl implements IRecipeDAO {
                     e.printStackTrace();
                 }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RecipeInsertException("SQL Error in Recipe Insertion " + dto.getRecipeName());
         }
@@ -98,8 +98,8 @@ public class RecipeDAOImpl implements IRecipeDAO {
     public Recipe update(Recipe recipe) throws RecipeNotFoundDAOException {
         String sql = "UPDATE RECIPES SET RECIPENAME = ?, INSTRUCTION = ?, COOKINGTIME = ? WHERE RECIPEID = ?";
 
-        try(Connection connection = DBUtil.getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)){
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             int id = recipe.getId();
             String recipeName = recipe.getRecipeName();
@@ -114,7 +114,7 @@ public class RecipeDAOImpl implements IRecipeDAO {
             ps.executeUpdate();
 
             return recipe;
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RecipeNotFoundDAOException("Error in updating recipe " + recipe);
         }
@@ -124,21 +124,21 @@ public class RecipeDAOImpl implements IRecipeDAO {
     public void delete(int id) throws RecipeNotFoundDAOException {
         String sql = "DELETE FROM RECIPES WHERE ID = ?";
 
-        try(Connection connection = DBUtil.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)){
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
             int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete recipe with id: " + id, "Warning!", JOptionPane.YES_NO_OPTION);
-            if(response == JOptionPane.YES_NO_OPTION){
+            if (response == JOptionPane.YES_NO_OPTION) {
                 int n = ps.executeUpdate();
-                if(n >= 1){
+                if (n >= 1) {
                     JOptionPane.showMessageDialog(null, n + "row(s) affected", "Successful Deletion!", JOptionPane.PLAIN_MESSAGE);
                 } else {
                     JOptionPane.showMessageDialog(null, "No row(s) affected", "Failed Deletion!", JOptionPane.PLAIN_MESSAGE);
                 }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RecipeNotFoundDAOException("Error in deleting recipe with id: " + id);
         }
@@ -151,21 +151,21 @@ public class RecipeDAOImpl implements IRecipeDAO {
         ResultSet rs = null;
 
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)){
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             rs = ps.executeQuery();
 
-            if(rs.next()){
+            if (rs.next()) {
                 recipe = new Recipe(rs.getInt("RECIPEID"), rs.getString("RECIPENAME"), rs.getString("INSTRUCTIONS"), rs.getDouble("COOKINGTIME"));
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RecipeNotFoundDAOException("Error! Recipe with id " + id + " wasn't found!");
         } finally {
             try {
                 if (rs != null) rs.close();
-            } catch (SQLException e1){
+            } catch (SQLException e1) {
                 e1.printStackTrace();
             }
         }
@@ -180,22 +180,22 @@ public class RecipeDAOImpl implements IRecipeDAO {
         ResultSet rs = null;
 
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)){
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, firstLetter + "%");
             rs = ps.executeQuery();
 
-            while(rs.next()){
+            while (rs.next()) {
                 Recipe recipe = new Recipe(rs.getInt("RECIPEID"), rs.getString("RECIPENAME"),
                         rs.getString("INSTRUCTIONS"), rs.getDouble("COOKINGTIME"));
                 recipes.add(recipe);
             }
 
-        }  catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        if(recipes.isEmpty()){
+        if (recipes.isEmpty()) {
             throw new RecipeNotFoundDAOException("No recipes found starting with the letter: " + firstLetter);
         }
 
@@ -209,12 +209,12 @@ public class RecipeDAOImpl implements IRecipeDAO {
         ResultSet rs = null;
 
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)){
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, recipeId);
             rs = ps.executeQuery();
 
-            while(rs.next()){
+            while (rs.next()) {
                 Ingredient ingredient = new Ingredient(
                         rs.getInt("ingredientid"),
                         rs.getString("ingredientname"),
@@ -224,12 +224,12 @@ public class RecipeDAOImpl implements IRecipeDAO {
                 ingredients.add(ingredient);
             }
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             try {
                 if (rs != null) rs.close();
-            } catch (SQLException e1){
+            } catch (SQLException e1) {
                 e1.printStackTrace();
             }
         }
@@ -244,12 +244,12 @@ public class RecipeDAOImpl implements IRecipeDAO {
         ResultSet rs = null;
 
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)){
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, recipeName);
             rs = ps.executeQuery();
 
-            if(!rs.next()){
+            if (!rs.next()) {
                 throw new RecipeNotFoundDAOException("Error! Couldn't find recipe with name: " + recipeName);
             }
 
@@ -259,15 +259,59 @@ public class RecipeDAOImpl implements IRecipeDAO {
             List<Ingredient> recipeIngredients = getRecipeIngredients(recipe.getId());
             recipe.setIngredients(recipeIngredients);
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             try {
                 if (rs != null) rs.close();
-            } catch (SQLException e1){
+            } catch (SQLException e1) {
                 e1.printStackTrace();
             }
         }
         return recipe;
+    }
+
+    @Override
+    public List<String> getRecipeNames() throws RecipeNotFoundDAOException {
+        String sql = "SELECT recipename FROM recipes";
+        List<String> recipeNames = new ArrayList<>();
+
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                recipeNames.add(rs.getString("recipename"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RecipeNotFoundDAOException("SQL Error while fetching recipe names.");
+        }
+        return recipeNames;
+    }
+
+    @Override
+    public String getRecipeDetails(String recipeName) throws RecipeNotFoundDAOException {
+        String sql = "SELECT * FROM recipes WHERE recipename = ?";
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, recipeName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Here, you can either populate a Recipe object or just create a formatted String
+                    String instructions = rs.getString("instructions");
+                    double cookingTime = rs.getDouble("cookingtime");
+                    return "Instructions: " + instructions + "\nCooking Time: " + cookingTime;
+                } else {
+                    throw new RecipeNotFoundDAOException("Recipe with name " + recipeName + " not found.");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RecipeNotFoundDAOException("SQL Error while fetching recipe details.");
+        }
     }
 }
